@@ -59,9 +59,15 @@ Steam requests and cover downloads use the internet when those features are used
 
 ## Actual interface
 
+**Dark theme**
+
 ![The actual Questlio interface with a clean, empty library](images/screenshot.png)
 
-This is a real screenshot of the application with no personal games or sessions. The cover above is an AI-generated brand illustration, not a screenshot.
+**Light theme**
+
+![Questlio light theme with a clean, empty library](images/screenshot-light.png)
+
+These are real screenshots of the application with no personal games or sessions. The cover above is an AI-generated brand illustration, not a screenshot.
 
 ## Build from source
 
