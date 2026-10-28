@@ -1,0 +1,8 @@
+**/bin/
+**/obj/
+**/release-*/
+*.db
+*.db-wal
+*.db-shm
+*.log
+graphify-out/

@@ -1,0 +1,8 @@
+﻿const assert=require('node:assert/strict');const F=require('./ui/features-core.js');
+const stamp=(year,month,day)=>new Date(year,month,day,12).toISOString();
+const sessions=[{gameId:'a',startedAt:stamp(2026,0,1),activeSeconds:42},{gameId:'a',startedAt:stamp(2026,0,1),activeMinutes:2},{gameId:'b',startedAt:stamp(2026,1,1),activeSeconds:3600},{gameId:'a',startedAt:stamp(2025,11,31),activeMinutes:10},{gameId:'a',startedAt:'bad',activeSeconds:9999}];
+const year=F.year(sessions,2026);assert.equal(year.total,3762);assert.equal(year.count,3);assert.equal(year.days,2);assert.equal(year.months[0],162);assert.equal(year.games[0].id,'b');
+assert.equal(F.gameSessions(sessions,'a',{year:2026,month:1,day:1}).length,2);assert.equal(F.gameSessions(sessions,'a',{year:2024}).length,0);
+const games=[{id:'a',name:'Alpha',minutes:30,steam:{minutes:400},createdAt:stamp(2020,0,1)},{id:'b',name:'Beta',minutes:200,lastPlayedAt:stamp(2026,0,1),createdAt:stamp(2026,0,1)},{id:'c',name:'Gamma',minutes:1}];
+assert.equal(F.sortGames(games,'time')[0].id,'a');assert.equal(F.sortGames(games,'recent')[0].id,'b');assert.equal(F.sortGames(games,'added')[0].id,'b');assert.equal(F.sortGames(games,'name')[0].id,'a');assert.deepEqual(games.map(g=>g.id),['a','b','c']);
+require('node:fs').writeFileSync(process.env.GAIDEN_CHECK_OUTPUT?require('node:path').join(process.env.GAIDEN_CHECK_OUTPUT,'features-core.log'):require('node:path').join(__dirname,'release-0.19/features-core-result.json'),JSON.stringify({annualTotals:true,localDays:true,legacyMinutesFallback:true,invalidDatesExcluded:true,gameFilters:true,allFourSortModes:true,steamWithoutDoubleCount:true,inputNotMutated:true},null,2));console.log('Feature statistics and sorting passed');

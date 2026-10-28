@@ -1,0 +1,112 @@
+/* Liquid Glass is assigned a five-surface budget by glass.js: sidebar, toolbar, sheet, toast, menu. */
+.lg-backdrop { background:var(--ambient-base); position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden; contain: paint; }
+.lg-backdrop > div { position: absolute; inset: 0; opacity: 0; background: radial-gradient(ellipse at 6% 25%,rgba(var(--palette-a,var(--glass-neutral-a)),.64),transparent 82%),radial-gradient(ellipse at 88% 8%,rgba(var(--palette-b,var(--glass-neutral-b)),.48),transparent 85%),radial-gradient(ellipse at 22% 95%,rgba(var(--palette-c,var(--glass-neutral-c)),.48),transparent 78%); transition: opacity 400ms var(--ease); }
+.lg-backdrop > .is-visible { opacity: 1; }
+.app-shell { position: relative; z-index: 1; grid-template-columns: 248px minmax(0,1fr); column-gap: 16px; }
+.sidebar { width: auto; z-index: 8; border-radius: var(--glass-radius-sidebar); }
+.main-shell { padding-inline: 24px; }
+.main-shell main, .page-footer { background: transparent; border-radius: 0; }
+.heading, .metric-row, .recent-section > .section-heading, main > p, .page-footer { padding-left: 0; }
+.library-result { margin-left: 0; }
+.tools { padding-left: 0; }
+
+.game-name, .game-meta, .game-status { margin-left: 12px; }
+.topbar, body.is-scrolled .topbar { z-index: 9; background: transparent; backdrop-filter: none; border-color: transparent; }
+
+.toolbar-group { padding: 4px; gap: 0; border-radius: var(--glass-radius-control); }
+.segmented { position: relative; border-radius: var(--glass-radius-control); }
+.segmented button { position: relative; border-radius: var(--glass-radius-control); transition: transform var(--slow) var(--ease),background-color var(--fast); }
+.nav-lens { border-radius: var(--radius-control); }
+.hero .glass-button { position: relative; border-radius: var(--glass-radius-control); }
+dialog { border-radius: var(--glass-radius-sheet); }
+:where(.sidebar,.toolbar-group,dialog,.ui-toast,[role="menu"]) { --spec-x: 25%; --spec-y: 0%; }
+[data-lg] { backdrop-filter: none; background: var(--surface); }
+[data-lg-active] { background: var(--glass-tint); backdrop-filter: blur(var(--glass-blur)) saturate(1.8); border: 1px solid var(--glass-rim); box-shadow: var(--glass-shadow),inset 1px 1px 0 var(--glass-rim),inset -1px -1px 0 var(--glass-edge-dark); color: var(--text); }
+dialog[data-lg-active], .ui-toast[data-lg-active], [role="menu"][data-lg-active] { --glass-tint: var(--glass-tint-strong); }
+/* Transparent links use a contrast-safe accent on glass. */
+[data-lg-active] .text-button { background: transparent; color: var(--glass-link); }
+[data-lg-active] .text-button:hover { background: color-mix(in srgb,var(--accent) 8%,transparent); }
+[data-lg-active]::before { content: ''; position: absolute; inset: 0; z-index: 2; border-radius: inherit; pointer-events: none; padding: 1px; background: radial-gradient(ellipse at var(--spec-x) var(--spec-y),var(--glass-spec),transparent 65%),conic-gradient(from 145deg,var(--glass-rim),transparent 23%,var(--glass-edge-dark) 48%,var(--glass-rim) 72%,transparent); mask: linear-gradient(#fff 0 0) content-box,linear-gradient(#fff 0 0); mask-composite: exclude; opacity: .58; transition: opacity var(--fast) var(--ease); }
+[data-lg-active]:hover::before { opacity: .9; }
+.nav-item.active svg { color: var(--accent); }
+
+.toolbar-group, [role="menu"] { position: relative; }
+.toolbar-group .icon-button, .segmented button, .nav-item { transition: transform 220ms cubic-bezier(.2,1.4,.3,1),background-color var(--fast) var(--ease); }
+.toolbar-group .icon-button:active, .segmented button:active { transform: scale(.97); }
+.nav-item:hover { background:transparent; }
+.nav-item:active { transform:none; }
+:root:is([data-opaque="true"],[data-reduced-motion="true"]) [data-lg] { background: var(--surface); backdrop-filter: none; box-shadow: var(--shadow-1); border-color: var(--control-line); transition: none; }
+:root:is([data-opaque="true"],[data-reduced-motion="true"]) [data-lg]::before { display: none; }
+:root:is([data-opaque="true"],[data-reduced-motion="true"]) .lg-backdrop { background:var(--background); }
+:root:is([data-opaque="true"],[data-reduced-motion="true"]) .lg-backdrop > div { display:none; }
+:root[data-reduced-motion="true"] .lg-backdrop > div { transition: none; }
+:root[data-lg-hidden="true"] .lg-backdrop > div { transition: none; }
+:root[data-reduced-motion="true"] :where(.toolbar-group .icon-button,.segmented button,.nav-item) { transition: none; transform: none; }
+@media (prefers-reduced-transparency: reduce), (prefers-reduced-motion: reduce), (forced-colors: active) {
+  [data-lg] { background: var(--surface); backdrop-filter: none; border-color: var(--control-line); box-shadow: none; transition: none; }
+  [data-lg]::before, .lg-backdrop > div { display: none; }
+  .lg-backdrop { background:var(--background); }
+}
+@media (forced-colors: active) {
+  [data-lg], .hero .glass-button[data-lg] { background: Canvas; color: CanvasText; border-color: ButtonText; }
+}
+@media (max-width: 1000px) {
+  .app-shell { grid-template-columns: 96px minmax(0,1fr); }
+  .sidebar { width: auto; }
+  .main-shell { padding-inline: 24px; }
+  .heading, .metric-row { padding-left: 0; }
+}
+@media (max-width: 640px) {
+  .app-shell { grid-template-columns: 64px minmax(0,1fr); }
+  .sidebar { width: auto; }
+}
+
+.toolbar-group { padding: 2px; }
+.toolbar-group .icon-button { border-radius: 999px; border-color: transparent; }
+.toolbar-group .icon-button:is(:hover,:active,[aria-pressed="true"]) { border-radius: 999px; background: color-mix(in srgb,var(--text) 8%,transparent); }
+.hero .hero-icon-tile { position: absolute; z-index: 1; right: 10%; top: 50%; transform: translateY(-50%); display: grid; place-items: center; width: 108px; height: 108px; border-radius: 22%; background: var(--surface-soft); box-shadow: 0 12px 32px rgba(0,0,0,.35); }
+.hero-icon-tile .game-icon { width: min(64px,calc(var(--hero-native-width) * 2)); max-width: 64px; height: auto; border-radius: 22%; image-rendering: auto; }
+.cover .icon-cover, .cover .placeholder-cover { position: relative; overflow: hidden; padding: 0; gap: 0; background: linear-gradient(145deg,color-mix(in srgb,var(--surface) 45%,rgb(var(--cover-color,110,130,150))),color-mix(in srgb,var(--surface) 74%,rgb(var(--cover-color,110,130,150)))); }
+.cover .placeholder-cover span { display: none; }
+.cover .placeholder-cover svg { width: 64px; height: 64px; padding: 18px; border-radius: 22%; color: var(--text); background: color-mix(in srgb,var(--surface) 76%,rgb(var(--cover-color,110,130,150))); box-shadow: 0 6px 16px rgba(0,0,0,.18); }
+.cover-icon-tile { position: relative; display: grid; place-items: center; width: 64px; height: 64px; border-radius: 22%; background: color-mix(in srgb,var(--surface) 65%,rgb(var(--cover-color))); box-shadow: 0 6px 16px rgba(0,0,0,.2); }
+.cover-icon-tile .game-icon { width: min(64px,var(--icon-native-width)); height: auto; max-height: 64px; border-radius: 22%; image-rendering: auto; }
+
+.hero-cover-tile .hero-clear-art { position: static; transform: none; width: min(64px,calc(var(--hero-native-width) * 2)); max-height: 100%; box-shadow: none; border-radius: 22%; }
+/* Segments use a quiet trough and raised opaque selection, never an outlined button. */
+
+
+.segmented[data-lg] { background:var(--surface-soft); }
+.segmented .selected[data-lg] { background: var(--segment-fill); border-color: transparent; }
+
+@media (forced-colors: active) { .segmented .selected[data-lg] { background: Highlight; color: HighlightText; } }
+
+.add-platform[data-lg]::before { display: none; }
+.add-platform[data-lg] { border-color: transparent; box-shadow: none; }
+
+/* 11B: all shader maps are size gated in glass.js, with neutral padded edges. */
+[data-lg-active] { background:var(--glass-small-tint); color:var(--glass-ink); backdrop-filter:blur(var(--glass-small-blur)) saturate(var(--glass-saturation)); box-shadow:var(--glass-shadow),inset 1px 1px 0 var(--glass-rim),inset -1px -1px 0 var(--glass-edge-dark); transition:scale 220ms var(--ui-spring); }
+.sidebar[data-lg-active] { background:var(--glass-panel-tint); backdrop-filter:blur(var(--glass-blur)) saturate(var(--glass-saturation)); }
+dialog[data-lg-active], [role="menu"][data-lg-active] { background:var(--glass-tint-strong); backdrop-filter:blur(var(--glass-blur)) saturate(var(--glass-saturation)); }
+.ui-toast[data-lg-active], .segmented[data-lg-active], .segmented .selected[data-lg-active] { background:var(--glass-small-tint); color:var(--glass-ink); }
+[data-lg-active]::before { background:linear-gradient(130deg,var(--glass-spec),transparent 44%) padding-box,conic-gradient(from 145deg,var(--glass-rim),transparent 24%,var(--glass-edge-dark) 49%,var(--glass-rim) 74%,transparent); opacity:var(--glass-rim-opacity); box-shadow:inset 1px 1px 0 var(--glass-rim),inset -1px -1px 0 var(--glass-edge-dark); }
+[data-lg-active]:hover::before { opacity:1; }
+:where(.toolbar-group,.nav-lens)[data-lg-active]::before { background:radial-gradient(ellipse at var(--spec-x) var(--spec-y),var(--glass-spec),transparent 58%),conic-gradient(from 145deg,var(--glass-rim),transparent 24%,var(--glass-edge-dark) 49%,var(--glass-rim) 74%,transparent); }
+[data-lg-pressed] { scale:var(--glass-press); }
+.tools .segmented button { padding-inline:8px; }
+.ui-toast { max-width:320px; }
+[data-lg-active] .text-button { color:var(--glass-link); }
+.segmented[data-lg-active] button { color:var(--glass-ink); }
+@supports (backdrop-filter:url("#lg-refract") blur(2px)) {
+ [data-lg-active][data-lg-refract] { backdrop-filter:var(--glass-refraction) blur(var(--glass-small-blur)) saturate(var(--glass-saturation)); }
+}
+@supports not (backdrop-filter:url("#lg-refract") blur(2px)) {
+ [data-lg-active][data-lg-refract] { backdrop-filter:blur(var(--glass-small-blur)) saturate(var(--glass-saturation)); }
+}
+:root:is([data-opaque="true"],[data-reduced-motion="true"]) [data-lg] { background:var(--surface); color:var(--text); backdrop-filter:none; transition:none; scale:1; }
+:root[data-ui-paused="true"] .lg-backdrop > div, :root[data-ui-paused="true"] [data-lg] { transition:none; }
+@media (prefers-reduced-transparency:reduce), (prefers-reduced-motion:reduce), (forced-colors:active) {
+ [data-lg], [data-lg-active][data-lg-refract], .sidebar[data-lg-active], dialog[data-lg-active], [role="menu"][data-lg-active] { background:var(--surface); color:var(--text); backdrop-filter:none; transition:none; scale:1; }
+ [data-lg]::before { display:none; }
+}
+@media (forced-colors:active) { [data-lg-active] { background:Canvas; color:CanvasText; border-color:ButtonText; } }

@@ -1,0 +1,4 @@
+{
+  "rom": "Mario",
+  "coreWithoutFlag": "snes9x_libretro.dll"
+}
