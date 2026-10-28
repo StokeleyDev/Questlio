@@ -61,13 +61,21 @@ Steam requests and cover downloads use the internet when those features are used
 
 **Dark theme**
 
-![The actual Questlio interface with a clean, empty library](images/screenshot.png)
+![Questlio dark theme with a demo game library](images/screenshot.png)
 
 **Light theme**
 
-![Questlio light theme with a clean, empty library](images/screenshot-light.png)
+![Questlio light theme with a demo game library](images/screenshot-light.png)
 
-These are real screenshots of the application with no personal games or sessions. The cover above is an AI-generated brand illustration, not a screenshot.
+**Statistics — dark theme**
+
+![Questlio statistics in dark theme](images/statistics-dark.png)
+
+**Statistics — light theme**
+
+![Questlio statistics in light theme](images/statistics-light.png)
+
+These are real application screenshots using eight demo games and synthetic play sessions. No personal library or activity is shown; the download still starts with an empty library. Game artwork belongs to its respective owners. The cover above is an AI-generated brand illustration, not a screenshot.
 
 ## Build from source
 
