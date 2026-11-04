@@ -92,11 +92,11 @@ cd Questlio\desktop
 .\build.ps1
 ```
 
-The build publishes `desktop/release-0.30.0`, updates `desktop/latest.txt`, and creates the root `Questlio.exe` launcher. NuGet access is needed to restore dependencies on a new development machine.
+The build publishes `desktop/release-0.30.3`, updates `desktop/latest.txt`, and creates the root `Questlio.exe` launcher. NuGet access is needed to restore dependencies on a new development machine.
 
 ## Built with
 
-**C# / .NET 8 · WinForms · WebView2 · SQLite · HTML / CSS / JavaScript**
+**C# / .NET 8 · WinForms · WebView2 · SQLite · React · HTML / CSS / JavaScript**
 
 - `desktop/Program.cs` — native window, tray and WebView bridge.
 - `desktop/LibraryStore.cs` — local library storage.
