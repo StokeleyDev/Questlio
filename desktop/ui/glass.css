@@ -110,3 +110,11 @@ dialog[data-lg-active], [role="menu"][data-lg-active] { background:var(--glass-t
  [data-lg]::before { display:none; }
 }
 @media (forced-colors:active) { [data-lg-active] { background:Canvas; color:CanvasText; border-color:ButtonText; } }
+
+/* Optical rim is a static texture, never a separate backdrop pass. */
+.sidebar[data-lg] { background:var(--glass-sidebar-tint); backdrop-filter:none; border-color:transparent; box-shadow:var(--shadow-1); }
+[data-lg-active][data-lg-refract]::before { background-image:var(--glass-optical-rim); background-size:100% 100%; padding:0; mask:none; opacity:1; }
+:root:is([data-opaque="true"],[data-reduced-motion="true"]) .sidebar[data-lg] { background:var(--surface); }
+@media (prefers-reduced-transparency:reduce), (prefers-reduced-motion:reduce), (forced-colors:active) {
+  .sidebar[data-lg] { background:var(--surface); }
+}

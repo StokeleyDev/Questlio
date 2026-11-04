@@ -79,3 +79,12 @@
 /* Compact icon hero follows the application theme. */
 :root { --hero-icon-base:var(--surface); --hero-icon-mix:12%; --hero-icon-text:var(--text); --hero-icon-muted:var(--muted); }
 :root[data-theme="dark"] { --hero-icon-base:var(--hero-ink); --hero-icon-mix:58%; --hero-icon-text:var(--hero-text); --hero-icon-muted:var(--hero-muted); }
+
+/* Questlio: compact glass chrome; opaque content keeps scrolling inexpensive. */
+:root { --glass-blur:16px; --glass-small-blur:1px; --glass-saturation:1.35; --glass-small-tint:rgba(255,255,255,.48); --glass-panel-tint:rgba(255,255,255,.68); --glass-tint-strong:rgba(255,255,255,.90); --glass-optical-rim:none; --glass-sidebar-tint:rgba(255,255,255,.72); }
+:root[data-theme="dark"] { --glass-small-tint:rgba(24,32,46,.50); --glass-panel-tint:rgba(24,32,46,.72); --glass-tint-strong:rgba(24,32,46,.94); --glass-sidebar-tint:rgba(24,32,46,.88); }
+
+/* Original Liquid Glass controls use the app's bundled Inter font. */
+:root { --lg-font:var(--font); --qg-gap:8px; --qg-control-size:44px; --qg-filter-width:360px; }
+
+:root { --qg-switch-track-height:28px; }

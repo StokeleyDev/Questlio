@@ -11,7 +11,7 @@ const GaidenKit=(()=>{
  function each(scope,selector,fn){if(scope.matches?.(selector))fn(scope);scope.querySelectorAll?.(selector).forEach(fn);}
  function empty(title,text,action='Добавить игру',viewName='add'){const context=viewName==='search'?'search':viewName==='sessions'||/сесси|период/i.test(title)?'clock':viewName==='backups'?'archive':'game';if(context==='search')action='';return `<section class="ui-empty" role="status" data-empty-context="${context}">${icon(context)}<h2>${esc(title)}</h2><p class="muted">${esc(text)}</p>${viewName==='search'?'<span data-ui-empty="search" hidden></span>':''}${action?`<button class="primary" type="button" ${viewName==='add'?'data-action="add"':`data-ui-empty="${viewName}"`}>${esc(action)}</button>`:''}</section>`;}
  function loading(button,on){if(!button)return;if(on){button.dataset.wasDisabled=String(button.disabled);button.disabled=true;button.setAttribute('aria-busy','true');}else{button.disabled=button.dataset.wasDisabled==='true';button.removeAttribute('aria-busy');delete button.dataset.wasDisabled;}}
- register('buttons',scope=>each(scope,'button',b=>{if(b.classList.contains('ui-checkbox'))return;b.classList.add('ui-button');b.dataset.variant=b.classList.contains('primary')?'primary':b.matches('.danger-button,.exe-remove')?'destructive':(b.matches('.ui-switch,.text-button,.icon-button,[data-filter],.nav-item')||b.closest('.segmented'))?'plain':'secondary';}));
+ register('buttons',scope=>each(scope,'button',b=>{if(b.closest('[data-qg-root]')||b.classList.contains('ui-checkbox'))return;b.classList.add('ui-button');b.dataset.variant=b.classList.contains('primary')?'primary':b.matches('.danger-button,.exe-remove')?'destructive':(b.matches('.ui-switch,.text-button,.icon-button,[data-filter],.nav-item')||b.closest('.segmented'))?'plain':'secondary';}));
  register('checkbox',scope=>each(scope,'input[type="checkbox"]:not(.toggle)',input=>{
   if(input.dataset.uiCheckbox)return;input.dataset.uiCheckbox='true';input.hidden=true;input.tabIndex=-1;
   const button=document.createElement('button');button.type='button';button.className='ui-checkbox';button.setAttribute('role','checkbox');button.setAttribute('aria-checked',String(input.checked));
@@ -20,7 +20,7 @@ const GaidenKit=(()=>{
   button.onclick=()=>{input.checked=!input.checked;sync();input.dispatchEvent(new Event('change',{bubbles:true}));};
   input.addEventListener('change',sync);input.after(button);sync();
  }));
- register('switch',scope=>each(scope,'input.toggle',input=>{  if(!input.id)input.id='ui-switch-input-'+(++serial);let button=input.nextElementSibling;
+ register('switch',scope=>each(scope,'input.toggle',input=>{if(input.dataset.qgSwitch)return;  if(!input.id)input.id='ui-switch-input-'+(++serial);let button=input.nextElementSibling;
   if(!button?.matches('.ui-switch')){button=document.createElement('button');button.type='button';button.className='ui-switch';button.id='ui-switch-'+input.id;button.setAttribute('role','switch');button.dataset.switchFor=input.id;input.after(button);input.hidden=true;input.tabIndex=-1;
    const label=input.labels?.[0];if(label){label.id||='ui-label-'+(++serial);button.setAttribute('aria-labelledby',label.id);label.htmlFor=button.id;}else button.setAttribute('aria-label',input.getAttribute('aria-label')||'Переключить');
    const description=input.getAttribute('aria-describedby');if(description)button.setAttribute('aria-describedby',description);

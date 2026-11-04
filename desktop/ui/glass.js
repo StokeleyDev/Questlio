@@ -1,48 +1,29 @@
 // Event-driven material only: no interval, timeout or animation-frame loop.
 (() => {
   const root=document.documentElement,main=document.querySelector('main');
-  const selector='.sidebar,.toolbar-group,dialog,.ui-toast,[role="menu"],.segmented,.segmented .selected,.nav-lens,.icon-button';
+  const selector='.sidebar,dialog,.ui-toast,[role="menu"],.nav-lens';
   const backdrop=document.createElement('div');backdrop.className='lg-backdrop';backdrop.setAttribute('aria-hidden','true');
   const layers=[document.createElement('div'),document.createElement('div')];backdrop.append(...layers);document.body.prepend(backdrop);
   const cache=new Map(),observed=new Set();let surfaces=[],layer=0,sourceKey=null,pendingSource=null,paused=false,queued=false,paletteReads=0;
   const blocked=()=>root.dataset.opaque==='true'||root.dataset.reducedMotion==='true'||matchMedia('(forced-colors: active),(prefers-reduced-transparency: reduce),(prefers-reduced-motion: reduce)').matches;
   const visible=e=>{const r=e.getBoundingClientRect();return r.width>0&&r.height>0&&r.bottom>0&&r.right>0&&r.top<innerHeight&&r.left<innerWidth&&getComputedStyle(e).visibility==='visible';};
-  const mapCache=new Map(),filters=new Map(),paletteCache=new Map();let nextFilter=0,mapBuilds=0,refractionScale=12,refractionDisabled='.toolbar-group';
-  const filterTemplate=document.querySelector('#lg-refract'),filterDefs=filterTemplate.parentNode;
+  const filters=new Map(),paletteCache=new Map();let refractionDisabled='' ;
+
   const rawSize=el=>({w:el.offsetWidth,h:el.offsetHeight});
   const small=el=>el.matches('.toolbar-group,.segmented,.segmented .selected,.nav-lens,.ui-toast,.icon-button');
   const priority=el=>el.matches('.ui-toast')?100:el.matches('[role=menu]')?95:el.matches('dialog')?90:el.matches('.toolbar-group')?85:el.matches('.sidebar')?80:el.matches('.selected')?75:el.matches('.nav-lens')?70:el.matches('.segmented')?65:60;
   function eligible(el){const {w,h}=rawSize(el);return small(el)&&w>0&&h>0&&w<=320&&h<=96;}
-  function displacement(w,h,r){
-    const key=w+'x'+h+':'+r;if(mapCache.has(key))return mapCache.get(key);
-    const pad=24,canvas=document.createElement('canvas');canvas.width=w+pad*2;canvas.height=h+pad*2;
-    const ctx=canvas.getContext('2d'),image=ctx.createImageData(canvas.width,canvas.height),band=Math.min(16,h*.28);
-    const sdf=(x,y)=>{const qx=Math.abs(x-w/2)-(w/2-r),qy=Math.abs(y-h/2)-(h/2-r);return Math.hypot(Math.max(qx,0),Math.max(qy,0))+Math.min(Math.max(qx,qy),0)-r;};
-    for(let y=0;y<canvas.height;y++)for(let x=0;x<canvas.width;x++){
-      const px=x-pad+.5,py=y-pad+.5,depth=-sdf(px,py),inside=depth>0&&depth<band;
-      const weight=inside?Math.sin(Math.PI*depth/band)**2:0,gx=sdf(px+1,py)-sdf(px-1,py),gy=sdf(px,py+1)-sdf(px,py-1),norm=Math.hypot(gx,gy)||1,i=(y*canvas.width+x)*4;
-      image.data[i]=128-gx/norm*90*weight;image.data[i+1]=128-gy/norm*90*weight;image.data[i+2]=128;image.data[i+3]=255;
-    }
-    ctx.putImageData(image,0,0);const value={uri:canvas.toDataURL('image/png'),pad,width:canvas.width,height:canvas.height,key};mapCache.set(key,value);mapBuilds++;
-    if(mapCache.size>64)mapCache.delete(mapCache.keys().next().value);return value;
-  }
-  function syncRefraction(el){
-    if(document.hidden||paused)return;
-    const allow=el.hasAttribute('data-lg-active')&&!blocked()&&eligible(el)&&!(refractionDisabled&&el.matches(refractionDisabled));
-    el.toggleAttribute('data-lg-refract',allow);if(!allow)return;
-    const {w,h}=rawSize(el),radius=Math.min(parseFloat(getComputedStyle(el).borderTopLeftRadius)||12,w/2,h/2),map=displacement(w,h,radius);
-    let state=filters.get(el);if(!state){const filter=filterTemplate.cloneNode(true);filter.id='lg-refract-'+(++nextFilter);filterDefs.append(filter);state={filter,key:null};filters.set(el,state);el.style.setProperty('--glass-refraction','url(#'+filter.id+')');}
-    if(state.key!==map.key){state.key=map.key;const filter=state.filter,img=filter.querySelector('feImage');for(const node of [filter,img]){node.setAttribute('x',-map.pad);node.setAttribute('y',-map.pad);node.setAttribute('width',map.width);node.setAttribute('height',map.height);}img.setAttribute('href',map.uri);}
-    state.filter.querySelector('feDisplacementMap').setAttribute('scale',String(refractionScale));
-  }
+  // Optical controls are owned exclusively by the original React library.
+  function syncRefraction(el){el.removeAttribute('data-lg-refract');el.style.removeProperty('--glass-refraction');el.style.removeProperty('--glass-optical-rim');}
   const resize=new ResizeObserver(entries=>{if(document.hidden||paused)return;for(const entry of entries)syncRefraction(entry.target);});
   function release(){if(document.hidden||paused)return;document.querySelectorAll('[data-lg-pressed]').forEach(el=>el.removeAttribute('data-lg-pressed'));}
   function allocate(){
     if(document.hidden||paused)return;
     const modal=document.querySelector('dialog[open]');let budget=5;
+    for(const el of surfaces)el.removeAttribute('data-lg-active');
     for(const el of surfaces){
-      const nested=el.matches('.icon-button')&&el.closest('.toolbar-group,.segmented');const wideSegment=el.matches('.segmented')&&!eligible(el);
-      const active=!blocked()&&!nested&&!wideSegment&&visible(el)&&(!modal||el===modal||modal.contains(el))&&budget>0;
+      const nested=!!el.parentElement.closest('[data-lg-active]')||!!el.querySelector('[data-lg-active]');const wideSegment=el.matches('.segmented')&&!eligible(el);
+      const active=false;
       el.toggleAttribute('data-lg-active',active);syncRefraction(el);if(active)budget--;
     }
   }
@@ -50,7 +31,7 @@
   let previousSegment=null,segmentAnimation=null;
   function refresh(){
     if(document.hidden||paused)return;
-    refractionScale=Number(getComputedStyle(root).getPropertyValue('--glass-refraction-scale'))||12;
+
     surfaces=[...document.querySelectorAll(selector)].filter(el=>!el.matches('.icon-button')||!el.closest('.toolbar-group,.segmented')).sort((a,b)=>priority(b)-priority(a));
     for(const el of [...observed])if(!el.isConnected){intersection.unobserve(el);resize.unobserve(el);observed.delete(el);const state=filters.get(el);if(state){state.filter.remove();filters.delete(el);}}
     for(const el of surfaces){el.setAttribute('data-lg','');if(!observed.has(el)){observed.add(el);intersection.observe(el);resize.observe(el);}}
@@ -131,8 +112,8 @@
   GaidenUI.on('rendered',schedule);GaidenUI.on('detailOpened',schedule);
   document.addEventListener('load',event=>{if(event.target.matches?.('img.game-art,img.game-icon'))schedule();},true);
   document.addEventListener('gaiden-appearance',()=>{if(document.hidden||paused)return;if(blocked())segmentAnimation?.cancel();sourceKey='__refresh__';schedule();});
-  document.addEventListener('visibilitychange',()=>{if(document.hidden){root.dataset.lgHidden='true';segmentAnimation?.cancel();}else{delete root.dataset.lgHidden;schedule();}});
+  document.addEventListener('visibilitychange',()=>{if(document.hidden){root.dataset.lgHidden='true';segmentAnimation?.cancel();for(const el of surfaces){el.removeAttribute('data-lg-refract');el.removeAttribute('data-lg-active');}}else{delete root.dataset.lgHidden;schedule();}});
   window.addEventListener('resize',schedule,{passive:true});
-  window.GaidenGlass={refresh,syncPalette,dominant(image){try{return colors(image)?.[0]||null;}catch{return null;}},pause(value){paused=value;if(!value){release();refresh();}},setRefractionDisabled(selector=''){refractionDisabled=selector;refresh();},diagnostics:()=>({surfaces:surfaces.filter(e=>e.hasAttribute('data-lg-active')).length,paletteReads,animations:document.getAnimations().filter(a=>a.playState==='running').length,timers:0,hidden:document.hidden,blocked:blocked(),hasSource:!!sourceKey,refracted:surfaces.filter(e=>e.hasAttribute('data-lg-refract')).length,mapBuilds,mapCache:mapCache.size,refractionDisabled,palette:['a','b','c'].map(k=>layers[layer].style.getPropertyValue('--palette-'+k))})};
+  window.GaidenGlass={refresh,syncPalette,dominant(image){try{return colors(image)?.[0]||null;}catch{return null;}},pause(value){paused=value;if(value){for(const el of surfaces){el.removeAttribute('data-lg-refract');el.removeAttribute('data-lg-active');}}if(!value){release();refresh();}},setRefractionDisabled(selector=''){refractionDisabled=selector;refresh();},diagnostics:()=>({surfaces:surfaces.filter(e=>e.hasAttribute('data-lg-active')).length,paletteReads,animations:document.getAnimations().filter(a=>a.playState==='running').length,timers:0,hidden:document.hidden,blocked:blocked(),hasSource:!!sourceKey,refracted:surfaces.filter(e=>e.hasAttribute('data-lg-refract')).length,mapBuilds:0,mapCache:0,refractionDisabled,palette:['a','b','c'].map(k=>layers[layer].style.getPropertyValue('--palette-'+k))})};
   refresh();
 })();

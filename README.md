@@ -28,16 +28,21 @@ Your library starts empty. Add your own games or import a Steam library, then ke
 
 ## Quick start
 
-**Windows 10 or 11, 64-bit.** The portable release includes the .NET runtime. Microsoft Edge WebView2 Runtime must be installed.
+**Questlio 0.30.3 · Windows 10/11 x64.** The .NET runtime is included. Microsoft Edge WebView2 Runtime must be installed.
 
-1. Download [Questlio 0.30.0 portable ZIP](https://github.com/StokeleyDev/Questlio/releases/download/v0.30.0/Questlio-0.30.0-win-x64-portable.zip), or use the [latest release](https://github.com/StokeleyDev/Questlio/releases/latest).
-2. Extract the **entire** archive into a folder on your PC.
-3. Open the extracted `Questlio` folder and run **`Questlio.exe`**.
-4. Choose **Add game** and select a game executable, or use **Import from Steam**.
+- [Download Setup](https://github.com/StokeleyDev/Questlio/releases/download/v0.30.3/Questlio-0.30.3-Setup.exe) — install for your Windows account; includes an uninstaller.
+- [Download portable ZIP](https://github.com/StokeleyDev/Questlio/releases/download/v0.30.3/Questlio-0.30.3-win-x64-portable.zip) — extract the **entire** archive and run **Questlio.exe**.
+- [Release notes and checksums](https://github.com/StokeleyDev/Questlio/releases/tag/v0.30.3).
 
-Keep the launcher and its `desktop` folder together. Do not run the application directly inside the ZIP. If the interface cannot open, install [Microsoft Edge WebView2 Runtime](https://developer.microsoft.com/en-us/microsoft-edge/webview2/).
+Choose **Add game** and select a game executable, or use **Import from Steam**. English is the default; select **Settings → Language → Русский** for Russian.
 
-English is the default language. Select **Settings → Language → Русский** to switch to Russian; the choice is saved.
+Exit Questlio using its tray menu before updating or uninstalling. Setup adds Questlio to Windows **Installed apps** and places **unins000.exe** in the application folder. Uninstall preserves your library, backups and settings under `%LOCALAPPDATA%\Questlio`.
+
+If the interface cannot open, install [Microsoft Edge WebView2 Runtime](https://developer.microsoft.com/en-us/microsoft-edge/webview2/).
+
+### New in 0.30.3
+
+Original Liquid Glass buttons, segmented controls, switches and sidebar material. The Reduce motion switch now always shows the saved state. Refraction is suspended during scrolling, and off-screen settings controls use the native fallback.
 
 ## Tracking your games
 
@@ -75,7 +80,7 @@ Steam requests and cover downloads use the internet when those features are used
 
 ![Questlio statistics in light theme](images/statistics-light.png)
 
-These are real application screenshots using eight demo games and synthetic play sessions. No personal library or activity is shown; the download still starts with an empty library. Game artwork belongs to its respective owners. The cover above is an AI-generated brand illustration, not a screenshot.
+The overview screenshots show the current interface with a synthetic demo library; statistics screenshots use synthetic play sessions. No personal library or activity is shown; the download still starts with an empty library. Game artwork belongs to its respective owners. The cover above is an AI-generated brand illustration, not a screenshot.
 
 ## Build from source
 
@@ -102,3 +107,9 @@ The build publishes `desktop/release-0.30.0`, updates `desktop/latest.txt`, and 
 ## Feedback
 
 Found a bug or have an idea? [Open an issue](https://github.com/StokeleyDev/Questlio/issues). Include the app version, Windows version and steps to reproduce. Avoid posting your database, Steam key or logs containing personal file paths.
+
+### Liquid Glass and Setup builds
+
+The production React bundle is committed; normal .NET builds do not need Node.js. To rebuild the original Liquid Glass components, run `desktop/build-glass.ps1` (pinned React 19.3.1 and @zakisheriff/liquid-glass 0.3.16). See [glass-ui notes](desktop/glass-ui/README.md).
+
+[GitHub Actions](.github/workflows/release.yml) builds the self-contained app, compiles [Inno Setup](installer/Questlio.iss), tests install/upgrade/uninstall with synthetic data, then publishes Setup, portable ZIP and SHA-256 checksums.

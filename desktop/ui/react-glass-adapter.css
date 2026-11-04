@@ -1,0 +1,22 @@
+/* Only layout and focus are adapted; material and optics come from the original library. */
+[data-qg-source][hidden], [data-qg-root][hidden] { display:none; }
+.qg-island { display:inline-flex; align-items:center; vertical-align:middle; min-width:0; }
+.qg-icon { display:inline-flex; align-items:center; justify-content:center; }
+.qg-icon svg { width:20px; height:20px; }
+.toolbar-group { gap:var(--qg-gap); padding:0; background:transparent; border:0; box-shadow:none; }
+.qg-island .lg-button { min-height:var(--qg-control-size); }
+.qg-island .lg-button[data-icon-only] { min-width:var(--qg-control-size); }
+.qg-island .lg-switch { min-height:var(--qg-switch-track-height); }
+.qg-island .lg-track--segmented { min-height:var(--qg-control-size); }
+.qg-island .lg-track__item { min-height:var(--qg-control-size); }
+[data-qg-root="segmented"] { min-width:min(var(--qg-filter-width),100%); }
+.qg-island button:focus-visible { outline:2px solid var(--focus); outline-offset:3px; }
+.qg-island button:disabled { cursor:default; }
+
+[data-qg-root='switch'] { min-height:var(--qg-control-size); }
+
+/* One original GlassCard behind the sidebar contents, with no nested glass. */
+.sidebar.qg-sidebar-active[data-lg] { background:transparent; box-shadow:none; border-color:transparent; isolation:isolate; }
+.qg-sidebar-material { position:absolute; inset:0; z-index:-1; pointer-events:none; border-radius:inherit; }
+.qg-sidebar-material[hidden] { display:none; }
+.qg-sidebar-card { width:100%; height:100%; }
