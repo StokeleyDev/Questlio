@@ -63,7 +63,22 @@ internal sealed partial class LibraryStore
     {
         using var db=Open();using var c=db.CreateCommand();c.CommandText="INSERT INTO active_session VALUES(1,$payload) ON CONFLICT(id) DO UPDATE SET payload=excluded.payload";c.Parameters.AddWithValue("$payload",JsonSerializer.Serialize(session));c.ExecuteNonQuery();
     }
+    // The tracker polls every second; re-reading and re-parsing the whole library is only needed when the
+    // database files actually changed (any commit touches the WAL or the main file).
+    private (long,DateTime,long,DateTime)? trackerStateStamp;
+    private (JsonArray Games,JsonArray Emulators) trackerStateCache;
+    private (long,DateTime,long,DateTime) FileStamp()
+    {
+        var main=new FileInfo(path);var wal=new FileInfo(path+"-wal");
+        return (main.Exists?main.Length:-1,main.Exists?main.LastWriteTimeUtc:default,wal.Exists?wal.Length:-1,wal.Exists?wal.LastWriteTimeUtc:default);
+    }
     internal (JsonArray Games,JsonArray Emulators) TrackerState()
+    {
+        var stamp=FileStamp();
+        if(trackerStateStamp==stamp)return trackerStateCache;
+        trackerStateCache=ReadTrackerState();trackerStateStamp=stamp;return trackerStateCache;
+    }
+    private (JsonArray Games,JsonArray Emulators) ReadTrackerState()
     {
         using var db=Open();
         JsonArray Read(string table){using var c=db.CreateCommand();c.CommandText=$"SELECT payload FROM {table} ORDER BY id";using var reader=c.ExecuteReader();var result=new JsonArray();while(reader.Read()){var item=JsonNode.Parse(reader.GetString(0));if(table=="games"&&item?["deleted"]?.GetValue<bool>()==true)continue;result.Add(item);}return result;}
@@ -141,7 +156,9 @@ internal sealed class GameTracker
         bool EmulatorAlive(JsonNode game)=>emulated.Any(m=>game["romIdentity"]?.GetValue<string>()==m.ProfileId+":"+m.Rom.Replace('/','\\').ToLowerInvariant());
         if(Current is not null) {
             var game=candidates.FirstOrDefault(g=>g!["id"]!.GetValue<string>()==Current.GameId);
-            if(game is null || !(game["romIdentity"] is not null?EmulatorAlive(game):LibraryStore.Exes(game).Any(Running))) { Current.Advance(elapsed,ReadIdle());Current.LastObservedAt=DateTimeOffset.UtcNow;Stop("process-closed",false);return true; }
+            if(game is null || !(game["romIdentity"] is not null?EmulatorAlive(game):LibraryStore.Exes(game).Any(Running))) {
+                // The process exited at an unknown moment since the last poll: do not credit that gap as play time.
+                if(Current is { } closed){store.Finish(closed,"process-closed");Current=null;}previous=clock.Elapsed.TotalSeconds;return true; }
             Current.GameName=game["name"]!.GetValue<string>();
             Current.Advance(elapsed,ReadIdle());
             Current.LastObservedAt=DateTimeOffset.UtcNow;
