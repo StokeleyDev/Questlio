@@ -104,6 +104,9 @@ internal sealed partial class MainWindow : Form
     private string? selectedNewExe;
     private GameTracker? tracker;
     private readonly System.Windows.Forms.Timer trackerTimer = new() { Interval=1000 };
+    private const int TrackerMaxFailures=5;
+    private int trackerFailures;
+    private DateTime trackerRetryAt=DateTime.MinValue;
     private bool polling;
     private bool maintenance;
     private bool closingSession;
@@ -151,9 +154,14 @@ internal sealed partial class MainWindow : Form
         tray.MouseClick += (_,e)=>{if(e.Button==MouseButtons.Left)ShowQuickView();};
         trackerTimer.Tick += async (_, _) => {
             if(polling || maintenance || closingSession || tracker is null || web.CoreWebView2 is null)return;
+            if(DateTime.UtcNow<trackerRetryAt)return;
             polling=true;
-            try { bool changed=await Task.Run(()=>tracker.Poll()); if(!IsDisposed&&!closingSession&&!maintenance)await UpdateTrackerAsync(changed); }
-            catch(Exception error) { DiagnosticLog.Error("tracker",error);trackerTimer.Stop(); if(!IsDisposed){tray.Text=NativeText("Questlio — tracker error","Questlio — ошибка трекера"); if(web.CoreWebView2 is not null)await web.ExecuteScriptAsync("window.showTrackerState?.("+System.Text.Json.JsonSerializer.Serialize("Ошибка трекера: "+error.Message)+")");} }
+            try { bool changed=await Task.Run(()=>tracker.Poll()); trackerFailures=0; if(!IsDisposed&&!closingSession&&!maintenance)await UpdateTrackerAsync(changed); }
+            catch(Exception error) when(++trackerFailures<TrackerMaxFailures) {
+                // Transient failures (locked database, process access races) retry with backoff: 2, 4, 8, 16 s.
+                DiagnosticLog.Error("tracker-retry",error);trackerRetryAt=DateTime.UtcNow.AddSeconds(Math.Pow(2,trackerFailures));
+            }
+            catch(Exception error) { trackerFailures=0;DiagnosticLog.Error("tracker",error);trackerTimer.Stop(); if(!IsDisposed){tray.Text=NativeText("Questlio — tracker error","Questlio — ошибка трекера"); if(web.CoreWebView2 is not null)await web.ExecuteScriptAsync("window.showTrackerState?.("+System.Text.Json.JsonSerializer.Serialize("Ошибка трекера: "+error.Message)+")");} }
             finally { polling=false; }
         };
         Microsoft.Win32.SystemEvents.PowerModeChanged += PowerChanged;

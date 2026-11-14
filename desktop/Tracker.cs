@@ -113,11 +113,17 @@ internal sealed class GameTracker
     internal ActiveSession? Current { get; private set; }
     internal string Status => !Enabled ? "Трекер остановлен" : Current is null ? emulatorIssue??"Ожидание игры" : "Игра: "+Current.GameName;
     internal GameTracker(LibraryStore store) { this.store=store; if(store.Pending() is { } pending) store.Finish(pending,"recovered-after-interruption"); }
-    private static bool Running(string exe)
+    // One process snapshot per poll instead of a full system enumeration for every executable of every game.
+    private HashSet<string> runningNames=new(StringComparer.OrdinalIgnoreCase);
+    private static HashSet<string> SnapshotProcessNames()
     {
-        var processes=Process.GetProcessesByName(exe);
-        try { return processes.Length>0; } finally { foreach(var p in processes)p.Dispose(); }
+        var names=new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        var processes=Process.GetProcesses();
+        try { foreach(var p in processes){ try{names.Add(p.ProcessName);}catch(InvalidOperationException){} } }
+        finally { foreach(var p in processes)p.Dispose(); }
+        return names;
     }
+    private bool Running(string exe)=>runningNames.Contains(exe);
     private bool LearnMatchedPath(JsonNode game)=>store.LearnLaunchPath(game,()=>{
         foreach(string exe in LibraryStore.Exes(game)){
             var processes=Process.GetProcessesByName(exe);
@@ -129,6 +135,7 @@ internal sealed class GameTracker
     {
         double now=clock.Elapsed.TotalSeconds; double elapsed=now-previous;previous=now;
         if(!Enabled)return false;
+        runningNames=SnapshotProcessNames();
         var (gamesArray,emulatorsArray)=store.TrackerState();var candidates=gamesArray.OrderByDescending(g=>Latest(g!)).ThenBy(g=>g!["id"]!.GetValue<string>(),StringComparer.Ordinal).ToArray();
         var emulated=EmulatorResolver.Running(emulatorsArray,out emulatorIssue);
         bool EmulatorAlive(JsonNode game)=>emulated.Any(m=>game["romIdentity"]?.GetValue<string>()==m.ProfileId+":"+m.Rom.Replace('/','\\').ToLowerInvariant());
@@ -141,7 +148,7 @@ internal sealed class GameTracker
             store.Checkpoint(Current);return LearnMatchedPath(game);
         } else {
             JsonNode? game;
-            if(emulated.FirstOrDefault() is { } match){var id=store.EmulatorGame(match);game=store.TrackerState().Games.Single(g=>g!["id"]!.GetValue<string>()==id);}
+            if(emulated.FirstOrDefault() is { } match){var id=store.EmulatorGame(match);game=store.TrackerState().Games.FirstOrDefault(g=>g!["id"]!.GetValue<string>()==id);}
             else game=candidates.FirstOrDefault(g=>g!["platform"]?.GetValue<string>()=="PC"&&LibraryStore.Exes(g).Any(Running));
             if(game is not null) {LearnMatchedPath(game);Current=new ActiveSession {GameId=game["id"]!.GetValue<string>(),GameName=game["name"]!.GetValue<string>()};store.ConfirmSessionStart(Current);return true; }
         }
