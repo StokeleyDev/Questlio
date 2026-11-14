@@ -33,7 +33,7 @@ internal sealed partial class LibraryStore
     {
         using var db=ReadBackup(file);using var c=db.CreateCommand();c.CommandText="PRAGMA quick_check";
         if(!string.Equals(c.ExecuteScalar() as string,"ok",StringComparison.Ordinal))throw new InvalidDataException("Копия повреждена: проверка SQLite не пройдена");
-        c.CommandText="PRAGMA user_version";if((long)c.ExecuteScalar()! !=1)throw new InvalidDataException("Версия базы не поддерживается");
+        c.CommandText="PRAGMA user_version";if((long)c.ExecuteScalar()! is var schema&&(schema<1||schema>SchemaVersion))throw new InvalidDataException("Версия базы не поддерживается");
         foreach(var table in new[]{"games","sessions","daily_records","imports","active_session","emulator_profiles","pcs","settings"}) {
             c.CommandText="SELECT COUNT(*) FROM sqlite_master WHERE type='table' AND name=$name";c.Parameters.Clear();c.Parameters.AddWithValue("$name",table);
             if((long)c.ExecuteScalar()! !=1)throw new InvalidDataException("Это не резервная копия Questlio: нет таблицы "+table);
@@ -66,7 +66,7 @@ internal sealed partial class LibraryStore
         try{
             using(var source=ReadBackup(file))using(var destination=new SqliteConnection(new SqliteConnectionStringBuilder{DataSource=staged,Pooling=false}.ToString())){destination.Open();source.BackupDatabase(destination);}
             ValidateBackup(staged);var safety=CreateBackup("before-restore");
-            using(var source=ReadBackup(staged))using(var destination=Open())source.BackupDatabase(destination);
+            using(var source=ReadBackup(staged))using(var destination=Open()){source.BackupDatabase(destination);Migrate(destination);}
             return safety;
         }finally{if(File.Exists(staged))File.Delete(staged);}
     }

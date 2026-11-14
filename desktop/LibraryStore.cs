@@ -23,9 +23,24 @@ internal sealed partial class LibraryStore
             CREATE TABLE IF NOT EXISTS emulator_profiles(id TEXT PRIMARY KEY, payload TEXT NOT NULL);
             CREATE TABLE IF NOT EXISTS pcs(id TEXT PRIMARY KEY, payload TEXT NOT NULL);
             CREATE TABLE IF NOT EXISTS settings(key TEXT PRIMARY KEY, value TEXT NOT NULL);
-            PRAGMA user_version=1;
             """;
         cmd.ExecuteNonQuery();
+        Migrate(db);
+    }
+    // Schema migrations. Migrations[i] upgrades a database from version i+1 to i+2.
+    // To change the schema: append a step here and bump nothing else — SchemaVersion follows the list.
+    private static readonly Action<SqliteConnection,SqliteTransaction>[] Migrations = [];
+    internal static int SchemaVersion => 1 + Migrations.Length;
+    internal static void Migrate(SqliteConnection db)
+    {
+        using var tx=db.BeginTransaction();
+        using var c=db.CreateCommand();c.Transaction=tx;c.CommandText="PRAGMA user_version";
+        long version=(long)c.ExecuteScalar()!;
+        if(version==0)version=1; // freshly created database: tables above are the version 1 schema
+        if(version>SchemaVersion)throw new InvalidDataException("База создана более новой версией Questlio. Обновите приложение.");
+        for(long v=version;v<SchemaVersion;v++)Migrations[v-1](db,tx);
+        c.CommandText=$"PRAGMA user_version={SchemaVersion}";c.ExecuteNonQuery();
+        tx.Commit();
     }
     private SqliteConnection Open() { var db = new SqliteConnection(new SqliteConnectionStringBuilder { DataSource = path }.ToString()); db.Open(); return db; }
     internal static JsonObject ParsePackage(string text)
