@@ -1,4 +1,4 @@
-param([ValidatePattern('^[0-9]+([.][0-9]+){1,3}$')][string]$Version='0.30.3')
+param([ValidatePattern('^[0-9]+([.][0-9]+){1,3}$')][string]$Version='0.40.0')
 $ErrorActionPreference = 'Stop'
 Push-Location $PSScriptRoot
 try {

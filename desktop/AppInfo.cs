@@ -1,2 +1,2 @@
 namespace GaidenDesktop;
-internal static class AppInfo { internal const string Version="0.30.3"; }
+internal static class AppInfo { internal const string Version="0.40.0"; }

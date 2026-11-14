@@ -28,11 +28,11 @@ Your library starts empty. Add your own games or import a Steam library, then ke
 
 ## Quick start
 
-**Questlio 0.30.3 · Windows 10/11 x64.** The .NET runtime is included. Microsoft Edge WebView2 Runtime must be installed.
+**Questlio 0.40.0 · Windows 10/11 x64.** The .NET runtime is included. Microsoft Edge WebView2 Runtime must be installed.
 
-- [Download Setup](https://github.com/StokeleyDev/Questlio/releases/download/v0.30.3/Questlio-0.30.3-Setup.exe) — install for your Windows account; includes an uninstaller.
-- [Download portable ZIP](https://github.com/StokeleyDev/Questlio/releases/download/v0.30.3/Questlio-0.30.3-win-x64-portable.zip) — extract the **entire** archive and run **Questlio.exe**.
-- [Release notes and checksums](https://github.com/StokeleyDev/Questlio/releases/tag/v0.30.3).
+- [Download Setup](https://github.com/StokeleyDev/Questlio/releases/download/v0.40.0/Questlio-0.40.0-Setup.exe) — install for your Windows account; includes an uninstaller.
+- [Download portable ZIP](https://github.com/StokeleyDev/Questlio/releases/download/v0.40.0/Questlio-0.40.0-win-x64-portable.zip) — extract the **entire** archive and run **Questlio.exe**.
+- [Release notes and checksums](https://github.com/StokeleyDev/Questlio/releases/tag/v0.40.0).
 
 Choose **Add game** and select a game executable, or use **Import from Steam**. English is the default; select **Settings → Language → Русский** for Russian.
 
@@ -40,9 +40,9 @@ Exit Questlio using its tray menu before updating or uninstalling. Setup adds Qu
 
 If the interface cannot open, install [Microsoft Edge WebView2 Runtime](https://developer.microsoft.com/en-us/microsoft-edge/webview2/).
 
-### New in 0.30.3
+### New in 0.40.0
 
-Original Liquid Glass buttons, segmented controls, switches and sidebar material. The Reduce motion switch now always shows the saved state. Refraction is suspended during scrolling, and off-screen settings controls use the native fallback.
+Lighter, more reliable tracking: lower CPU usage, automatic retries after errors, an emulator tracking crash fix and more accurate session ends. The database can now be upgraded automatically by future versions, and remaining error messages are translated.
 
 ## Tracking your games
 
@@ -92,7 +92,7 @@ cd Questlio\desktop
 .\build.ps1
 ```
 
-The build publishes `desktop/release-0.30.3`, updates `desktop/latest.txt`, and creates the root `Questlio.exe` launcher. NuGet access is needed to restore dependencies on a new development machine.
+The build publishes `desktop/release-0.40.0`, updates `desktop/latest.txt`, and creates the root `Questlio.exe` launcher. NuGet access is needed to restore dependencies on a new development machine.
 
 ## Built with
 
